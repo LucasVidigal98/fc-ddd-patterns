@@ -12,6 +12,33 @@ import OrderItemModel from "./order-item.model";
 import OrderModel from "./order.model";
 import OrderRepository from "./order.repository";
 
+async function startOrder() {
+  const customerRepository = new CustomerRepository();
+  const customer = new Customer("123", "Customer 1");
+  const address = new Address("Street 1", 1, "Zipcode 1", "City 1");
+  customer.changeAddress(address);
+  await customerRepository.create(customer);
+
+  const productRepository = new ProductRepository();
+  const product = new Product("123", "Product 1", 10);
+  await productRepository.create(product);
+
+  const orderItem = new OrderItem(
+    "1",
+    product.name,
+    product.price,
+    product.id,
+    2
+  );
+
+  const order = new Order("123", "123", [orderItem]);
+
+  const orderRepository = new OrderRepository();
+  await orderRepository.create(order);
+
+  return order;
+}
+
 describe("Order repository test", () => {
   let sequelize: Sequelize;
 
@@ -80,5 +107,55 @@ describe("Order repository test", () => {
         },
       ],
     });
+  });
+
+  it('should be able to find a order', async () => {
+    const order = await startOrder();
+
+    const orderRepository = new OrderRepository();
+
+    const foundOrder = await orderRepository.find(order.id);
+
+    expect(foundOrder).toBeDefined();
+
+    expect(foundOrder).toEqual(order);
+  });
+
+  it('should be able to find all orders', async () => {
+    const order = await startOrder();
+
+    const orderRepository = new OrderRepository();
+
+    const allOrders = await orderRepository.findAll();
+
+    expect(allOrders).toHaveLength(1);
+
+    expect(allOrders[0]).toEqual(order);
+  });
+
+  it('should be able to update a order', async () => {
+    const order = await startOrder();
+
+    const productRepository = new ProductRepository();
+    const product = new Product("1234", "Product 2", 10);
+    await productRepository.create(product);
+
+    const orderItem = new OrderItem(
+      "2",
+      product.name,
+      product.price,
+      product.id,
+      2
+    );
+
+    order.insertNewitem(orderItem);
+
+    const orderRepository = new OrderRepository();
+
+    await orderRepository.update(order);
+
+    const foundOrder = await orderRepository.find(order.id);
+
+    expect(foundOrder.total).toEqual(order.total)
   });
 });
