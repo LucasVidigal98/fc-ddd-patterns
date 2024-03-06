@@ -25,6 +25,11 @@ export default class Order {
     return this._items;
   }
 
+  insertNewitem(newItem: OrderItem) {
+    this._items = [...this.items, newItem];
+    this._total = this.total();
+  }
+
   validate(): boolean {
     if (this._id.length === 0) {
       throw new Error("Id is required");
