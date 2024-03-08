@@ -156,6 +156,8 @@ describe("Order repository test", () => {
 
     const foundOrder = await orderRepository.find(order.id);
 
-    expect(foundOrder.total).toEqual(order.total)
+    expect(foundOrder.total).toEqual(order.total);
+
+    expect(foundOrder).toEqual(order);
   });
 });
